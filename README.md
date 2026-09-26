@@ -22,6 +22,12 @@ I have a Pentium III with XP on my desk and wanted to read my chats on it. The o
 
 Photos, files, stickers and voice messages show up as `[photo]`, `[file]` and so on. Nothing can be downloaded or sent except text. Emoji need a font that has them, so on old systems they are boxes.
 
+## Status
+
+Tested with a real account: login, chat list, history, sending and live messages, with the client on Windows 11. The client has not run on real NT 4.0 or XP yet, so far only its import table is checked.
+
+ntgram does not show sponsored messages in channels. Telegram's API terms ask third-party clients to show them, so everyone uses it with their own api_id and at their own risk.
+
 ## Setup
 
 1. Get `api_id` and `api_hash` at https://my.telegram.org/apps.

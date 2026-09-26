@@ -1,0 +1,24 @@
+#include <windows.h>
+#include "resource.h"
+
+IDM_MAIN MENU
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "&Gateway...", IDM_SERVER
+        MENUITEM "&Reload chats", IDM_RELOAD
+        MENUITEM SEPARATOR
+        MENUITEM "E&xit", IDM_EXIT
+    END
+END
+
+IDD_ASK DIALOG 0, 0, 220, 84
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "ntgram"
+FONT 8, "MS Shell Dlg"
+BEGIN
+    LTEXT "", IDC_PROMPT, 7, 7, 206, 36
+    EDITTEXT IDC_ANSWER, 7, 46, 206, 12, ES_AUTOHSCROLL
+    DEFPUSHBUTTON "OK", IDOK, 109, 64, 50, 14
+    PUSHBUTTON "Cancel", IDCANCEL, 163, 64, 50, 14
+END

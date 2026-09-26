@@ -3,9 +3,13 @@ package main
 import (
 	"bufio"
 	"context"
+	"errors"
+	"fmt"
 	"net"
 	"reflect"
 	"testing"
+
+	"github.com/gotd/td/tgerr"
 )
 
 func TestGatewayPasswordIsRequired(t *testing.T) {
@@ -32,5 +36,18 @@ func TestGatewayPasswordIsRequired(t *testing.T) {
 			t.Fatal(err)
 		}
 		expect("ERR", "wrong gateway password")
+	}
+}
+
+func TestErrTextKeepsTelegramErrorShort(t *testing.T) {
+	wrap := func(e error) error { return fmt.Errorf("sign in: rpcDoRequest: %w", e) }
+	for err, want := range map[error]string{
+		wrap(tgerr.New(400, "PHONE_CODE_INVALID")): "PHONE_CODE_INVALID",
+		wrap(tgerr.New(420, "FLOOD_WAIT_30")):      "FLOOD_WAIT 30",
+		errors.New("unknown chat u1"):              "unknown chat u1",
+	} {
+		if got := errText(err); got != want {
+			t.Errorf("errText(%v) = %q, want %q", err, got, want)
+		}
 	}
 }

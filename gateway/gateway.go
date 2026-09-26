@@ -8,6 +8,7 @@ import (
 	"log"
 	"net"
 	"strconv"
+	"strings"
 	"sync"
 
 	"github.com/gotd/td/telegram"
@@ -17,6 +18,7 @@ import (
 	"github.com/gotd/td/telegram/query/messages"
 	"github.com/gotd/td/telegram/updates"
 	"github.com/gotd/td/tg"
+	"github.com/gotd/td/tgerr"
 )
 
 type gateway struct {
@@ -143,9 +145,20 @@ func (g *gateway) handle(ctx context.Context, nc net.Conn) {
 			continue
 		}
 		if err := g.command(ctx, c, f); err != nil {
-			c.out <- line("ERR", err.Error())
+			c.out <- line("ERR", errText(err))
 		}
 	}
+}
+
+func errText(err error) string {
+	rpc, ok := tgerr.As(err)
+	switch {
+	case !ok:
+		return err.Error()
+	case rpc.Argument > 0:
+		return fmt.Sprintf("%s %d", rpc.Type, rpc.Argument)
+	}
+	return rpc.Type
 }
 
 func (g *gateway) sendState(ctx context.Context, c *conn) {
@@ -178,7 +191,13 @@ func (g *gateway) command(ctx context.Context, c *conn, f []string) error {
 		if len(args) != 1 {
 			return errors.New("usage: PHONE <number>")
 		}
-		sent, err := g.tg.Auth().SendCode(ctx, args[0], auth.SendCodeOptions{})
+		phone := strings.Map(func(r rune) rune {
+			if r < '0' || r > '9' {
+				return -1
+			}
+			return r
+		}, args[0])
+		sent, err := g.tg.Auth().SendCode(ctx, phone, auth.SendCodeOptions{})
 		if err != nil {
 			return err
 		}
@@ -187,7 +206,7 @@ func (g *gateway) command(ctx context.Context, c *conn, f []string) error {
 			return fmt.Errorf("unexpected reply %T", sent)
 		}
 		g.mu.Lock()
-		g.phone, g.codeHash = args[0], code.PhoneCodeHash
+		g.phone, g.codeHash = phone, code.PhoneCodeHash
 		g.mu.Unlock()
 		c.out <- line("AUTH", "need_code")
 

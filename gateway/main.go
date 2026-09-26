@@ -34,7 +34,11 @@ func main() {
 		appID = id
 	}
 
-	g := newGateway(os.Getenv("NTGRAM_PASSWORD"))
+	password := os.Getenv("NTGRAM_PASSWORD")
+	if password == "" {
+		log.Print("NTGRAM_PASSWORD is not set, anyone who can reach this port can read and send your messages")
+	}
+	g := newGateway(password)
 	d := tg.NewUpdateDispatcher()
 	g.onUpdates(d)
 	g.gaps = updates.New(updates.Config{Handler: d})
